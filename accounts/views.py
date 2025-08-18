@@ -9,6 +9,8 @@ import logging
 from django.views import View
 from django.utils.decorators import method_decorator
 import traceback
+from accounts.tasks import fetch_all_contacts_task
+
 
 
 
@@ -77,6 +79,7 @@ def tokens(request):
 
             }
         )
+        fetch_all_contacts_task.delay(response_data.get("locationId"), response_data.get("access_token"))
         return JsonResponse({
             "message": "Authentication successful",
             "access_token": response_data.get('access_token'),

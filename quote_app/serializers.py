@@ -11,6 +11,8 @@ from .models import (
     CustomerOptionResponse, CustomerSubQuestionResponse, CustomerPackageQuote
 )
 
+from accounts.models import Address, Contact
+
 from service_app.serializers import ServiceSettingsSerializer
 
 class LocationPublicSerializer(serializers.ModelSerializer):
@@ -88,21 +90,20 @@ class CustomerSubmissionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerSubmission
         fields = [
-            'customer_name', 'customer_email', 'customer_phone',
-            'customer_address', 'house_sqft', 'location'
+            'contact', 'adddress', 'house_sqft'
         ]
-        read_only_fields = ['customer_address']
+        # read_only_fields = ['customer_address']
     
     def create(self, validated_data):
         # Set expiration date (e.g., 30 days from now)
         from django.utils import timezone
         from datetime import timedelta
-        location_obj = validated_data['location']
-        # If it's an ID instead of a Location object
-        if isinstance(location_obj, (str, int)):
-            location_obj = Location.objects.get(id=location_obj)
+        # location_obj = validated_data['location']
+        # # If it's an ID instead of a Location object
+        # if isinstance(location_obj, (str, int)):
+        #     location_obj = Location.objects.get(id=location_obj)
 
-        validated_data['customer_address'] = location_obj.address
+        # validated_data['customer_address'] = location_obj.address
         
         submission = CustomerSubmission.objects.create(**validated_data)
         submission.expires_at = timezone.now() + timedelta(days=30)
@@ -371,3 +372,18 @@ class SubmitFinalQuoteSerializer(serializers.Serializer):
         if not value:
             raise serializers.ValidationError("Terms and conditions must be accepted")
         return value
+
+
+
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = '__all__'
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = '__all__'

@@ -29,6 +29,42 @@ from .serializers import (
 )
 
 from quote_app.helpers import create_or_update_ghl_contact
+from rest_framework.generics import ListAPIView
+from .serializers import ContactSerializer, AddressSerializer
+from accounts.models import Contact
+
+
+from rest_framework.pagination import PageNumberPagination
+
+class ContactPagination(PageNumberPagination):
+    page_size = 20  # items per page
+    page_size_query_param = 'page_size'  # allow client to override with ?page_size=50
+    max_page_size = 100
+
+
+class ContactSearchView(ListAPIView):
+    serializer_class = ContactSerializer
+    pagination_class = ContactPagination
+    permission_classes = [AllowAny]
+
+
+    def get_queryset(self):
+        query = self.request.query_params.get('search', '').strip()
+        qs = Contact.objects.all()
+
+        if query:
+            keywords = query.split()
+            q_object = Q()
+            for keyword in keywords:
+                q_object |= Q(first_name__icontains=keyword)
+                q_object |= Q(last_name__icontains=keyword)
+                q_object |= Q(email__icontains=keyword)
+                q_object |= Q(phone__icontains=keyword)
+                q_object |= Q(country__icontains=keyword)
+            qs = qs.filter(q_object)
+
+        return qs.order_by('-date_added')
+
 
 # Step 1: Get initial data (locations, services, size ranges)
 class InitialDataView(APIView):

@@ -3,6 +3,7 @@ from django.db import models
 from decimal import Decimal
 import uuid
 from service_app.models import Service, Package, Location, Question, QuestionOption, SubQuestion
+from accounts.models import Contact, Address
 
 class CustomerSubmission(models.Model):
     """Main customer submission model"""
@@ -17,15 +18,16 @@ class CustomerSubmission(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     
     # Customer Information
-    customer_name = models.CharField(max_length=255)
-    customer_email = models.EmailField()
-    customer_phone = models.CharField(max_length=20)
-    ghl_contact_id = models.CharField(null=True, blank=True, max_length=255)
-    customer_address = models.TextField()
+    # customer_name = models.CharField(max_length=255)
+    # customer_email = models.EmailField()
+    # customer_phone = models.CharField(max_length=20)
+    # ghl_contact_id = models.CharField(null=True, blank=True, max_length=255)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
+    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)
     
     # House Information
     house_sqft = models.PositiveIntegerField()
-    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
+    # location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
     
     # Submission Details
     selected_services = models.ManyToManyField(Service, through='CustomerServiceSelection')

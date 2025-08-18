@@ -3,6 +3,8 @@ import requests
 from celery import shared_task
 from accounts.models import GHLAuthCredentials
 from decouple import config
+from accounts.utils import fetch_all_contacts
+
 
 @shared_task
 def make_api_call():
@@ -36,3 +38,12 @@ def make_api_call():
 
             }
         )
+    
+
+
+@shared_task
+def fetch_all_contacts_task(location_id, access_token):
+    """
+    Celery task to fetch all contacts for a given location using the provided access token.
+    """
+    fetch_all_contacts(location_id, access_token)

@@ -9,6 +9,9 @@ urlpatterns = [
     
     # Step 1: Get initial data (locations, services, size ranges)
     path('initial-data/', views.InitialDataView.as_view(), name='initial-data'),
+
+    path('contacts/search/', views.ContactSearchView.as_view(), name='contact-search'),
+
     
     # Step 2: Create customer submission
     path('create-submission/', views.CustomerSubmissionCreateView.as_view(), name='create-submission'),
