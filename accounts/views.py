@@ -92,3 +92,21 @@ def tokens(request):
             "status_code": response.status_code,
             "response_text": response.text[:500]
         }, status=500)
+    
+
+def sync_all_contacts_and_address(request):
+
+    try:
+        
+        obj = GHLAuthCredentials.objects.first()
+        fetch_all_contacts_task.delay(obj.location_id, obj.access_token)
+        return JsonResponse({
+            "message": "Authentication successful",
+            "access_token": obj.access_token,
+            "token_stored": True
+        })
+        
+    except requests.exceptions.JSONDecodeError:
+        return JsonResponse({
+            "error": "Invalid JSON response from API",
+        }, status=500)
