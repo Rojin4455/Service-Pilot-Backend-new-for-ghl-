@@ -1,5 +1,5 @@
 from django.urls import path
-from accounts.views import auth_connect,tokens,callback,sync_all_contacts_and_address
+from accounts.views import auth_connect,tokens,callback,sync_all_contacts_and_address,webhook_handler
 
 
 urlpatterns = [
