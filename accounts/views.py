@@ -9,8 +9,7 @@ import logging
 from django.views import View
 from django.utils.decorators import method_decorator
 import traceback
-from accounts.tasks import fetch_all_contacts_task
-
+from accounts.tasks import fetch_all_contacts_task,handle_webhook_event
 
 
 
@@ -79,7 +78,7 @@ def tokens(request):
 
             }
         )
-        fetch_all_contacts_task.delay(response_data.get("locationId"), response_data.get("access_token"))
+        # fetch_all_contacts_task.delay(response_data.get("locationId"), response_data.get("access_token"))
         return JsonResponse({
             "message": "Authentication successful",
             "access_token": response_data.get('access_token'),
@@ -110,3 +109,20 @@ def sync_all_contacts_and_address(request):
         return JsonResponse({
             "error": "Invalid JSON response from API",
         }, status=500)
+    
+
+@csrf_exempt
+def webhook_handler(request):
+    if request.method != "POST":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        print("date:----- ", data)
+        Webhook.objects.create(data=data)
+        event_type = data.get("type")
+        handle_webhook_event.delay(data, event_type)
+        return JsonResponse({"message":"Webhook received"}, status=200)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    

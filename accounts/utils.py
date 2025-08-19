@@ -412,3 +412,38 @@ def sync_addresses_to_db(address_data):
     print(f"{len(addresses_to_create)} new addresses created.")
     print(f"{updated_count} existing addresses updated.")
 
+
+
+import requests
+from accounts.models import GHLAuthCredentials
+from accounts.models import Contact, Address
+
+def create_or_update_contact(data):
+    contact_id = data.get("id")
+    contact, created = Contact.objects.update_or_create(
+        contact_id=contact_id,
+        defaults={
+            "first_name": data.get("firstName"),
+            "last_name": data.get("lastName"),
+            "email": data.get("email"),
+            "phone": data.get("phone"),
+            "dnd": data.get("dnd", False),
+            "country": data.get("country"),
+            "date_added": data.get("dateAdded"),
+            "location_id": data.get("locationId"),
+        }
+    )
+    cred = GHLAuthCredentials.objects.first()
+    fetch_contacts_locations([data], data.get("locationId"), cred.access_token)
+    print("Contact created/updated:", contact_id)
+
+def delete_contact(data):
+    contact_id = data.get("id")
+    try:
+        contact = Contact.objects.get(contact_id=contact_id)
+        # Delete all addresses related to this contact
+        Address.objects.filter(contact=contact).delete()
+        contact.delete()
+        print("Contact and related addresses deleted:", contact_id)
+    except Contact.DoesNotExist:
+        print("Contact not found for deletion:", contact_id)

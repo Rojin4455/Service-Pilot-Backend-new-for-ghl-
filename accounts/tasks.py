@@ -47,3 +47,20 @@ def fetch_all_contacts_task(location_id, access_token):
     Celery task to fetch all contacts for a given location using the provided access token.
     """
     fetch_all_contacts(location_id, access_token)
+
+
+from celery import shared_task
+from accounts.models import GHLAuthCredentials
+from django.utils.dateparse import parse_datetime
+from accounts.utils import create_or_update_contact, delete_contact
+
+
+@shared_task
+def handle_webhook_event(data, event_type):
+    try:
+        if event_type in ["ContactCreate", "ContactUpdate"]:
+            create_or_update_contact(data)
+        elif event_type == "ContactDelete":
+            delete_contact(data)
+    except Exception as e:
+        print(f"Error handling webhook event: {str(e)}")
