@@ -43,7 +43,7 @@ def create_or_update_ghl_contact(submission, is_submit=False):
 
         # Common payload fields
         custom_fields = [{
-            "id": "vWNjYOQajJAPtx2Hkq2e",
+            "id": "AfQbphMXdk6rk6vnWPPU",
             "field_value": f"{config("BASE_FRONTEND_URI")}/booking?form_id={submission.id}" if not is_submit else f"{config("BASE_FRONTEND_URI")}/quote/details/{submission.id}"
         }]
 
