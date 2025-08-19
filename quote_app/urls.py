@@ -1,8 +1,15 @@
 # user_urls.py - URL patterns for user-side functionality
 from django.urls import path
 from . import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import CustomServiceViewSet
 
+router = DefaultRouter()
+router.register(r'custom-services', CustomServiceViewSet, basename='customservice')
 urlpatterns = [
+
+    path('', include(router.urls)),
     # ============================================================================
     # QUOTE GENERATOR FLOW
     # ============================================================================
