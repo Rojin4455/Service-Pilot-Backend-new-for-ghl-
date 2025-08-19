@@ -234,9 +234,10 @@ class CustomerSubmissionDetailSerializer(serializers.ModelSerializer):
     def get_fields(self):
         fields = super().get_fields()
         request = self.context.get('request')
-        if request and request.method in ['PATCH', 'PUT']:
-            fields['customer_address'].read_only = True
+        # if request and request.method in ['PATCH', 'PUT']:
+        #     fields['customer_address'].read_only = True
         return fields
+
 
 class CustomerServiceSelectionDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for service selections"""
