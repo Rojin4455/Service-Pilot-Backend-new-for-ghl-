@@ -38,6 +38,7 @@ class CustomerSubmission(models.Model):
     total_adjustments = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     total_surcharges = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     quote_surcharge_applicable = models.BooleanField(default=False)
+    custom_service_total=models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), null=True, blank=True)
     final_total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     additional_data = models.JSONField(default=dict, null=True,blank=True)
     
@@ -58,13 +59,8 @@ class CustomerSubmission(models.Model):
             total=models.Sum('price')
         )['total'] or 0
 
-        self.final_total = (
-            self.total_base_price +
-            self.total_adjustments +
-            self.total_surcharges +
-            Decimal(custom_services_total)
-        )
-        self.save(update_fields=['final_total'])
+        self.custom_service_total = Decimal(custom_services_total)
+        self.save(update_fields=['custom_service_total'])
 
     # def save(self, *args, **kwargs):
     #     super().save(*args, **kwargs)
