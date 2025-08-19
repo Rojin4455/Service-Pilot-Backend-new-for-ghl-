@@ -119,10 +119,22 @@ def webhook_handler(request):
     try:
         data = json.loads(request.body)
         print("date:----- ", data)
-        Webhook.objects.create(data=data)
+
+        # Create Webhook record
+        Webhook.objects.create(
+            event=data.get("type", "unknown"),
+            company_id=data.get("locationId", "unknown"),
+            payload=data
+        )
+
+        # Dispatch async handler
         event_type = data.get("type")
         handle_webhook_event.delay(data, event_type)
-        return JsonResponse({"message":"Webhook received"}, status=200)
+
+        return JsonResponse({"message": "Webhook received"}, status=200)
+
     except Exception as e:
+        print(f"Webhook error: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
+
     
