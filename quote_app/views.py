@@ -1087,3 +1087,19 @@ class CustomServiceViewSet(viewsets.ModelViewSet):
         if purchase_id:
             queryset = queryset.filter(purchase_id=purchase_id)
         return queryset
+    
+
+from quote_app.serializers import ServiceListSerializer
+
+class ServiceListView(generics.ListAPIView):
+    """List all active services, with custom services for a submission"""
+    queryset = Service.objects.filter(is_active=True)
+    serializer_class = ServiceListSerializer
+    permission_classes = [AllowAny]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        submission_id = self.request.query_params.get("submission_id")
+        if submission_id:
+            context["submission_id"] = submission_id
+        return context
