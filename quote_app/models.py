@@ -22,7 +22,7 @@ class CustomerSubmission(models.Model):
     # customer_email = models.EmailField()
     # customer_phone = models.CharField(max_length=20)
     # ghl_contact_id = models.CharField(null=True, blank=True, max_length=255)
-    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE, null=True, blank=True)
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)
     
     # House Information
@@ -50,8 +50,14 @@ class CustomerSubmission(models.Model):
         db_table = 'customer_submissions'
         ordering = ['-created_at']
     
-    def __str__(self):
-        return f"{self.customer_name} - {self.customer_email}"
+    # def __str__(self):
+    #     return f"{self.customer_name} - {self.customer_email}"
+
+class CustomService(models.Model):
+    purchase = models.ForeignKey(CustomerSubmission, on_delete=models.CASCADE, related_name='custom_products')
+    product_name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    price = models.IntegerField()
 
 class CustomerServiceSelection(models.Model):
     """Through model for customer service selections"""

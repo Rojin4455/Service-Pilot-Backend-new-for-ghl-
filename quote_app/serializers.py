@@ -8,12 +8,31 @@ from service_app.models import (
 )
 from .models import (
     CustomerSubmission, CustomerServiceSelection, CustomerQuestionResponse,
-    CustomerOptionResponse, CustomerSubQuestionResponse, CustomerPackageQuote
+    CustomerOptionResponse, CustomerSubQuestionResponse, CustomerPackageQuote,CustomService
 )
 
 from accounts.models import Address, Contact
 
 from service_app.serializers import ServiceSettingsSerializer
+
+
+
+class CustomServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomService
+        fields = ['id', 'purchase', 'product_name', 'description', 'price']
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = '__all__'
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = '__all__'
+
 
 class LocationPublicSerializer(serializers.ModelSerializer):
     """Public serializer for locations"""
@@ -189,18 +208,19 @@ class CustomerPackageQuoteSerializer(serializers.ModelSerializer):
 
 class CustomerSubmissionDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for customer submissions"""
-    location_details = LocationPublicSerializer(source='location', read_only=True)
     service_selections = serializers.SerializerMethodField()
+    contact = ContactSerializer(read_only=True)
+    address = AddressSerializer(read_only=True)
     print("erererereererrerere")
     
     class Meta:
         model = CustomerSubmission
         fields = [
-            'id', 'customer_name', 'customer_email', 'customer_phone',
-            'customer_address', 'house_sqft', 'location', 'location_details',
+            'id',
+            'house_sqft',
             'status', 'total_base_price', 'total_adjustments',
             'total_surcharges', 'final_total', 'created_at','quote_surcharge_applicable',
-            'expires_at', 'service_selections','additional_data'
+            'expires_at', 'service_selections','additional_data','contact','address'
         ]
     
     def get_service_selections(self, obj):
@@ -372,13 +392,3 @@ class SubmitFinalQuoteSerializer(serializers.Serializer):
 
 
 
-class AddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Address
-        fields = '__all__'
-
-
-class ContactSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Contact
-        fields = '__all__'

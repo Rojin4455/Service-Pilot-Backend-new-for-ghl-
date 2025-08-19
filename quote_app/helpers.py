@@ -18,10 +18,10 @@ def create_or_update_ghl_contact(submission, is_submit=False):
         results = []
 
         # Step 1: Determine search URL
-        if submission.ghl_contact_id:
-            search_url = f"https://services.leadconnectorhq.com/contacts/{submission.ghl_contact_id}"
+        if submission.contact.contact_id:
+            search_url = f"https://services.leadconnectorhq.com/contacts/{submission.contact.contact_id}"
         else:
-            search_query = submission.customer_email or submission.customer_phone
+            search_query = submission.contact.email or submission.contact.first_name
             if not search_query:
                 print("No identifier to search GHL contact.")
                 return
@@ -51,8 +51,6 @@ def create_or_update_ghl_contact(submission, is_submit=False):
         if results:
             ghl_contact_id = results[0]["id"]
             contact_payload = {
-                "firstName": submission.customer_name,
-                "address1": submission.customer_address,
                 "customFields": custom_fields
             }
             contact_response = requests.put(
@@ -62,10 +60,10 @@ def create_or_update_ghl_contact(submission, is_submit=False):
             )
         else:
             contact_payload = {
-                "firstName": submission.customer_name,
-                "email": submission.customer_email,
-                "phone": submission.customer_phone,
-                "address1": submission.customer_address,
+                "firstName": submission.contact.first_name,
+                "email": submission.contact.email,
+                "phone": submission.contact.phone,
+                # "address1": submission.customer_address,
                 "locationId": location_id,
                 "customFields": custom_fields
             }
@@ -79,11 +77,11 @@ def create_or_update_ghl_contact(submission, is_submit=False):
             print("Failed to create/update contact in GHL:", contact_response.text)
             return
 
-        ghl_contact_id = contact_response.json().get("contact", {}).get("id")
-        if ghl_contact_id:
-            submission.ghl_contact_id = ghl_contact_id
-            submission.save()
-            print(f"Contact synced successfully: {ghl_contact_id}")
+        # ghl_contact_id = contact_response.json().get("contact", {}).get("id")
+        # if ghl_contact_id:
+        #     submission.ghl_contact_id = ghl_contact_id
+        #     submission.save()
+        #     print(f"Contact synced successfully: {ghl_contact_id}")
 
     except Exception as e:
         print(f"Error syncing contact: {e}")

@@ -18,7 +18,7 @@ from service_app.models import (
 )
 from .models import (
     CustomerSubmission, CustomerServiceSelection, CustomerQuestionResponse,
-    CustomerOptionResponse, CustomerSubQuestionResponse, CustomerPackageQuote
+    CustomerOptionResponse, CustomerSubQuestionResponse, CustomerPackageQuote,CustomService
 )
 from .serializers import (
     LocationPublicSerializer, ServicePublicSerializer, PackagePublicSerializer,
@@ -32,6 +32,9 @@ from quote_app.helpers import create_or_update_ghl_contact
 from rest_framework.generics import ListAPIView
 from .serializers import ContactSerializer, AddressSerializer
 from accounts.models import Contact, Address
+
+from rest_framework import viewsets
+from .serializers import CustomServiceSerializer
 
 
 from rest_framework.pagination import PageNumberPagination
@@ -68,9 +71,13 @@ class ContactSearchView(ListAPIView):
 
 
 class AddressByContactView(APIView):
+    permission_classes=[AllowAny]
     def get(self, request, contact_id):
         if not contact_id:
             return Response({'error': 'contact_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        print("here contact address")
+        # contact = Contact.objects.get(contact_id=contact_id)
         addresses = Address.objects.filter(contact=contact_id)
         serializer = AddressSerializer(addresses, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -274,8 +281,8 @@ class SubmitServiceResponsesView(APIView):
                 surcharge_for_submission = False
                 # Generate package quotes for ALL packages
                 surcharge_applied, surcharge_price = self._generate_all_package_quotes(service_selection, submission)
-                if surcharge_applied:
-                    surcharge_for_submission = True
+                # if surcharge_applied:
+                #     surcharge_for_submission = True
 
                 # After all services processed
                 if surcharge_for_submission:
@@ -584,21 +591,21 @@ class SubmitServiceResponsesView(APIView):
         surcharge_amount = Decimal('0.00')
         surcharge_applied = False
         surcharge_amount_applied = Decimal('0.00')
-        if submission.location and hasattr(service, 'settings'):
-            try:
-                settings = service.settings
-                if settings.apply_trip_charge_to_bid:
-                    print("reached hererer")
-                    surcharge_amount_applied = submission.location.trip_surcharge
-                    # surcharge_amount = submission.location.trip_surcharge
-                    service_selection.surcharge_applicable = True
-                    service_selection.surcharge_amount = surcharge_amount
-                    surcharge_applied = True
-                    service_selection.save()
-                    print("submission.surcharge_applicable",submission.quote_surcharge_applicable)
-            except ServiceSettings.DoesNotExist:
-                # Service doesn't have settings, no surcharge
-                pass
+        # if submission.location and hasattr(service, 'settings'):
+        #     try:
+        #         settings = service.settings
+        #         if settings.apply_trip_charge_to_bid:
+        #             print("reached hererer")
+        #             surcharge_amount_applied = submission.location.trip_surcharge
+        #             # surcharge_amount = submission.location.trip_surcharge
+        #             service_selection.surcharge_applicable = True
+        #             service_selection.surcharge_amount = surcharge_amount
+        #             surcharge_applied = True
+        #             service_selection.save()
+        #             print("submission.surcharge_applicable",submission.quote_surcharge_applicable)
+        #     except ServiceSettings.DoesNotExist:
+        #         # Service doesn't have settings, no surcharge
+        #         pass
         
         # Clear existing quotes for this service
         service_selection.package_quotes.all().delete()
@@ -1057,3 +1064,24 @@ class ServicePackagesView(APIView):
             'service': ServicePublicSerializer(service).data,
             'packages': PackagePublicSerializer(packages, many=True).data
         })
+
+
+
+class CustomServiceViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for CRUD operations on CustomService
+    """
+    queryset = CustomService.objects.all()
+    serializer_class = CustomServiceSerializer
+    permission_classes = [AllowAny]  # You can change this if needed
+
+    def get_queryset(self):
+        """
+        Optionally filter by purchase (CustomerSubmission ID) via query param.
+        Example: /api/custom-services/?purchase=<submission_id>
+        """
+        queryset = super().get_queryset()
+        purchase_id = self.request.query_params.get("purchase")
+        if purchase_id:
+            queryset = queryset.filter(purchase_id=purchase_id)
+        return queryset
