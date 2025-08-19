@@ -182,7 +182,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:3001",  # Alternative React port
     "http://127.0.0.1:3001",
-    "http://3.141.107.85"
+    "http://3.141.107.85",
+    "https://quotenew.theservicepilot.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -220,6 +221,6 @@ CELERY_TIMEZONE = 'UTC'
 CELERY_BEAT_SCHEDULE = {
     'make-api-call-every-minute': {
         'task': 'accounts.tasks.make_api_call',
-        'schedule': timedelta(minutes=1),
+        'schedule': timedelta(hours=15),
     },
 }

@@ -31,7 +31,7 @@ from .serializers import (
 from quote_app.helpers import create_or_update_ghl_contact
 from rest_framework.generics import ListAPIView
 from .serializers import ContactSerializer, AddressSerializer
-from accounts.models import Contact
+from accounts.models import Contact, Address
 
 
 from rest_framework.pagination import PageNumberPagination
@@ -64,6 +64,16 @@ class ContactSearchView(ListAPIView):
             qs = qs.filter(q_object)
 
         return qs.order_by('-date_added')
+    
+
+
+class AddressByContactView(APIView):
+    def get(self, request, contact_id):
+        if not contact_id:
+            return Response({'error': 'contact_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        addresses = Address.objects.filter(contact=contact_id)
+        serializer = AddressSerializer(addresses, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # Step 1: Get initial data (locations, services, size ranges)
