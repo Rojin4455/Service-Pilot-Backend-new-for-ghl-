@@ -395,24 +395,15 @@ class SubmitFinalQuoteSerializer(serializers.Serializer):
 
 
 
+class ServiceListSerializer(serializers.ModelSerializer):
+    """Simplified serializer for listing services"""
+    class Meta:
+        model = Service
+        fields = ['id', 'name', 'description', 'order']
+
+
 class CustomServiceSerializer(serializers.ModelSerializer):
+    """Serializer for custom services"""
     class Meta:
         model = CustomService
         fields = ['id', 'product_name', 'description', 'price']
-
-
-class ServiceListSerializer(serializers.ModelSerializer):
-    custom_services = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Service
-        fields = ['id', 'name', 'description', 'order', 'custom_services']
-
-    def get_custom_services(self, obj):
-        """Return custom services for given submission"""
-        submission_id = self.context.get('submission_id')
-        if not submission_id:
-            return []
-        
-        custom_services = CustomService.objects.filter(purchase_id=submission_id)
-        return CustomServiceSerializer(custom_services, many=True).data

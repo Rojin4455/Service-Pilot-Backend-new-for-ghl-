@@ -22,7 +22,7 @@ urlpatterns = [
     path('address/by-contact/<int:contact_id>/', views.AddressByContactView.as_view(), name='address-by-contact'),
 
 
-    path('services/', views.ServiceListView.as_view(), name='service-list'),
+    path('services/', views.ServiceAndCustomServiceListView.as_view(), name='service-list'),
 
     # Step 2: Create customer submission
     path('create-submission/', views.CustomerSubmissionCreateView.as_view(), name='create-submission'),
