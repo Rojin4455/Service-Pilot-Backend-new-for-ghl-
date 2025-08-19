@@ -1023,13 +1023,15 @@ class SubmitFinalQuoteView(APIView):
                 total_base_price += selected_quote.base_price + selected_quote.sqft_price
                 total_adjustments += selected_quote.question_adjustments
                 # total_surcharges += submission.total_surcharges
+
+        
         
         final_total = total_base_price + total_adjustments + submission.total_surcharges
         
         submission.total_base_price = total_base_price
         submission.total_adjustments = total_adjustments
         # submission.total_surcharges = total_surcharges
-        submission.final_total = final_total
+        submission.final_total += final_total
         submission.save()
 
 # Utility views

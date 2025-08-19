@@ -49,6 +49,26 @@ class CustomerSubmission(models.Model):
     class Meta:
         db_table = 'customer_submissions'
         ordering = ['-created_at']
+
+
+
+    def calculate_final_total(self):
+        """Recalculate final_total including custom services"""
+        custom_services_total = self.custom_products.aggregate(
+            total=models.Sum('price')
+        )['total'] or 0
+
+        self.final_total = (
+            self.total_base_price +
+            self.total_adjustments +
+            self.total_surcharges +
+            Decimal(custom_services_total)
+        )
+        self.save(update_fields=['final_total'])
+
+    # def save(self, *args, **kwargs):
+    #     super().save(*args, **kwargs)
+    #     self.calculate_final_total()
     
     # def __str__(self):
     #     return f"{self.customer_name} - {self.customer_email}"
@@ -58,6 +78,9 @@ class CustomService(models.Model):
     product_name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     price = models.IntegerField()
+
+
+
 
 class CustomerServiceSelection(models.Model):
     """Through model for customer service selections"""

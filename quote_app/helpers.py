@@ -51,8 +51,14 @@ def create_or_update_ghl_contact(submission, is_submit=False):
         if results:
             ghl_contact_id = results[0]["id"]
             contact_payload = {
-                "customFields": custom_fields
+                "customFields": custom_fields,
             }
+            if is_submit:
+                if "quote submitted" not in results[0].get("tags"):
+                    contact_payload["tags"] = results[0].get("tags") + "quote submitted"
+            else:
+                if "quoted" not in results[0].get("tags"):
+                    contact_payload["tags"] = results[0].get("tags") + "quoted"
             contact_response = requests.put(
                 f"https://services.leadconnectorhq.com/contacts/{ghl_contact_id}",
                 json=contact_payload,
