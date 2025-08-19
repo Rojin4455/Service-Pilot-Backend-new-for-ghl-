@@ -406,4 +406,4 @@ class CustomServiceSerializer(serializers.ModelSerializer):
     """Serializer for custom services"""
     class Meta:
         model = CustomService
-        fields = ['id', 'product_name', 'description', 'price']
+        fields = ['id', 'product_name', 'description', 'price','purchase']
