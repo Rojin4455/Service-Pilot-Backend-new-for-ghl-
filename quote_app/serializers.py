@@ -217,12 +217,18 @@ class CustomerPackageQuoteSerializer(serializers.ModelSerializer):
         return FeaturePublicSerializer(features, many=True).data
 
 
+class QuoteScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuoteSchedule
+        fields = "__all__"
+
 class CustomerSubmissionDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for customer submissions"""
     service_selections = serializers.SerializerMethodField()
     contact = ContactSerializer(read_only=True)
     custom_products = CustomServiceSerializer(many=True, read_only=True)
     address = AddressSerializer(read_only=True)
+    quote_schedule = QuoteScheduleSerializer(read_only=True)
     print("erererereererrerere")
     
     class Meta:
@@ -232,7 +238,7 @@ class CustomerSubmissionDetailSerializer(serializers.ModelSerializer):
             'house_sqft',
             'status', 'total_base_price', 'total_adjustments',
             'total_surcharges', 'final_total', 'created_at','quote_surcharge_applicable',
-            'expires_at', 'service_selections','additional_data','contact','address','custom_products','custom_service_total'
+            'expires_at', 'service_selections','additional_data','contact','address','custom_products','custom_service_total','quote_schedule'
         ]
     
     def get_service_selections(self, obj):
