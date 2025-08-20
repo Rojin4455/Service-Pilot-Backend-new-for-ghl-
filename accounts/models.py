@@ -86,5 +86,14 @@ class Address(models.Model):
     property_sqft = models.PositiveIntegerField(blank=True, null=True)
     property_type = models.CharField(max_length=20, choices=PROPERTY_TYPE_CHOICES, blank=True, null=True)
 
+    
+    def get_full_address(self):
+        """Returns a single string of the full address."""
+        parts = [self.street_address, self.city, self.state, self.postal_code]
+        # Filter out None or empty values and join with a comma and space
+        return ', '.join(filter(None, parts))
+
+    
+
     def __str__(self):
         return f"{self.street_address}, {self.city}, {self.state}"

@@ -5,6 +5,9 @@ import uuid
 from service_app.models import Service, Package, Location, Question, QuestionOption, SubQuestion
 from accounts.models import Contact, Address
 
+
+
+
 class CustomerSubmission(models.Model):
     """Main customer submission model"""
     STATUS_CHOICES = [
@@ -62,12 +65,37 @@ class CustomerSubmission(models.Model):
         self.custom_service_total = Decimal(custom_services_total)
         self.save(update_fields=['custom_service_total'])
 
-    # def save(self, *args, **kwargs):
-    #     super().save(*args, **kwargs)
-    #     self.calculate_final_total()
+
+
+
+class QuoteSchedule(models.Model):
+    """
+    Holds information about a scheduled quote booking for a customer submission.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     
-    # def __str__(self):
-    #     return f"{self.customer_name} - {self.customer_email}"
+    # One-to-one relationship with CustomerSubmission
+    submission = models.OneToOneField(
+        CustomerSubmission, 
+        on_delete=models.CASCADE, 
+        related_name='quote_schedule'
+    )
+
+    # Provided fields
+    first_time = models.BooleanField(default=True)
+    quoted_by = models.CharField(max_length=255)
+    scheduled_date = models.DateTimeField(null=True, blank=True)
+    is_submitted = models.BooleanField(default=False)
+
+    # Additional useful fields
+    notes = models.TextField(blank=True, null=True, help_text="Any internal notes about the booking.")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Booking for {self.submission.id} on {self.scheduled_date.strftime('%Y-%m-%d')}"
+    
+
 
 class CustomService(models.Model):
     purchase = models.ForeignKey(CustomerSubmission, on_delete=models.CASCADE, related_name='custom_products')

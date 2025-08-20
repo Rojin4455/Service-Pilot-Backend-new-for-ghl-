@@ -8,7 +8,7 @@ from service_app.models import (
 )
 from .models import (
     CustomerSubmission, CustomerServiceSelection, CustomerQuestionResponse,
-    CustomerOptionResponse, CustomerSubQuestionResponse, CustomerPackageQuote,CustomService
+    CustomerOptionResponse, CustomerSubQuestionResponse, CustomerPackageQuote,CustomService, QuoteSchedule
 )
 
 from accounts.models import Address, Contact
@@ -108,20 +108,31 @@ class CustomerSubmissionCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating customer submissions"""
     contact = serializers.PrimaryKeyRelatedField(queryset=Contact.objects.all())
     address = serializers.PrimaryKeyRelatedField(queryset=Address.objects.all(), required=False, allow_null=True)
-
+    quoted_by = serializers.CharField(write_only=True)
+    first_time = serializers.BooleanField(write_only=True)
     class Meta:
         model = CustomerSubmission
         fields = [
-            'contact', 'address', 'house_sqft'
+            'contact', 'address', 'house_sqft','quoted_by','first_time'
         ]
     
     def create(self, validated_data):
         from django.utils import timezone
         from datetime import timedelta
 
+        quoted_by = validated_data.pop('quoted_by')
+        first_time = validated_data.pop('first_time')
+
         submission = CustomerSubmission.objects.create(**validated_data)
         submission.expires_at = timezone.now() + timedelta(days=30)
         submission.save()
+
+        QuoteSchedule.objects.create(
+            submission=submission,
+            quoted_by=quoted_by,
+            first_time=first_time
+        )
+
         return submission
 
 class CustomerServiceSelectionSerializer(serializers.ModelSerializer):
@@ -407,3 +418,9 @@ class CustomServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomService
         fields = ['id', 'product_name', 'description', 'price','purchase']
+
+
+class QuoteScheduleUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuoteSchedule
+        fields = ['first_time', 'quoted_by', 'scheduled_date', 'notes', 'is_submitted']

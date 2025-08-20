@@ -18,14 +18,14 @@ from service_app.models import (
 )
 from .models import (
     CustomerSubmission, CustomerServiceSelection, CustomerQuestionResponse,
-    CustomerOptionResponse, CustomerSubQuestionResponse, CustomerPackageQuote,CustomService
+    CustomerOptionResponse, CustomerSubQuestionResponse, CustomerPackageQuote,CustomService, QuoteSchedule
 )
 from .serializers import (
     LocationPublicSerializer, ServicePublicSerializer, PackagePublicSerializer,
     QuestionPublicSerializer, GlobalSizePackagePublicSerializer,
     CustomerSubmissionCreateSerializer, CustomerSubmissionDetailSerializer,
     ServiceQuestionResponseSerializer, PricingCalculationRequestSerializer,SubmitFinalQuoteSerializer,
-    ConditionalQuestionRequestSerializer, CustomerPackageQuoteSerializer,ConditionalQuestionResponseSerializer,ServiceResponseSubmissionSerializer
+    ConditionalQuestionRequestSerializer, CustomerPackageQuoteSerializer,ConditionalQuestionResponseSerializer,ServiceResponseSubmissionSerializer,QuoteScheduleUpdateSerializer
 )
 
 from quote_app.helpers import create_or_update_ghl_contact
@@ -105,6 +105,7 @@ class CustomerSubmissionCreateView(generics.CreateAPIView):
     queryset = CustomerSubmission.objects.all()
     serializer_class = CustomerSubmissionCreateSerializer
     permission_classes = [AllowAny]
+
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -1111,3 +1112,31 @@ class ServiceAndCustomServiceListView(APIView):
             "services": services_data,
             "custom_services": custom_services_data
         })
+    
+
+
+class QuoteScheduleUpdateView(generics.UpdateAPIView):
+    """
+    Update a QuoteSchedule record by submission ID.
+    """
+    serializer_class = QuoteScheduleUpdateSerializer
+    permission_classes = [AllowAny] # Set appropriate permissions
+
+    def get_object(self):
+        # Retrieve the submission ID from the URL kwargs
+        submission_id = self.kwargs.get('submission_id')
+        
+        # Look up the QuoteSchedule record associated with the submission ID
+        # The 'quote_schedule' is the related_name defined in your CustomerSubmission model
+        obj = get_object_or_404(QuoteSchedule, submission__id=submission_id)
+        
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
