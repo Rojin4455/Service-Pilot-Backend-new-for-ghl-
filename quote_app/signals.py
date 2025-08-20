@@ -27,8 +27,6 @@ def handle_quote_submission(sender, instance, created, **kwargs):
             contact = submission.contact
             address = submission.address
             
-            # Assuming 'ghl_contact_id' is on the Contact model
-            # customer_phone, customer_email, and customer_name should be on the Contact model
             customer_name = contact.first_name
             customer_email = contact.email
             customer_phone = contact.phone
@@ -49,11 +47,21 @@ def handle_quote_submission(sender, instance, created, **kwargs):
                 
                 if selected_package_quote:
                     job = {
-                        "title": service_selection.service.name, # or package name
+                        "title": service_selection.service.name,
                         "price": float(selected_package_quote.total_price),
-                        "duration": 180 # assuming a duration field exists
+                        "duration": 180
                     }
                     jobs_selected.append(job)
+
+            # Retrieve and add custom services to the jobs_selected list
+            custom_services = CustomService.objects.filter(purchase=submission)
+            for custom_service in custom_services:
+                custom_job = {
+                    "title": custom_service.product_name,
+                    "price": float(custom_service.price),
+                    "duration": 180
+                }
+                jobs_selected.append(custom_job)
 
             # Construct the final payload
             payload = {
@@ -73,7 +81,7 @@ def handle_quote_submission(sender, instance, created, **kwargs):
 
             print("payload: ", payload)
             response = requests.post(webhook_url, data=json.dumps(payload), headers=headers)
-            response.raise_for_status() # Raises an exception for bad responses (4xx or 5xx)
+            response.raise_for_status()
             
             print(f"Successfully sent payload to webhook. Status Code: {response.status_code}")
             
