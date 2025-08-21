@@ -61,7 +61,7 @@ def create_or_update_ghl_contact(submission, is_submit=False):
         quote_url = f"{config('BASE_FRONTEND_URI')}/quote/details/{submission.id}"
 
         custom_fields = [{
-            "id": "AfQbphMXdk6rk6vnWPPU",
+            "id": "Bff2eZtlr82uvVQmByPh",
             "field_value": quote_url if is_submit else booking_url
         }]
         print(f"🛠 Custom fields prepared: {custom_fields}")
