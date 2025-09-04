@@ -1140,3 +1140,57 @@ class QuoteScheduleUpdateView(generics.UpdateAPIView):
         self.perform_update(serializer)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+from django.db import models
+
+class RemoveServiceFromSubmissionView(APIView):
+    """
+    Remove a selected service from a submission
+    """
+    permission_classes = [AllowAny]
+
+    def delete(self, request, submission_id, service_id):
+        submission = get_object_or_404(CustomerSubmission, id=submission_id)
+
+        try:
+            with transaction.atomic():
+                # Find the service selection to remove
+                service_selection = get_object_or_404(
+                    CustomerServiceSelection,
+                    submission=submission,
+                    service_id=service_id
+                )
+
+                # Delete it (will cascade delete responses, quotes, etc.)
+                service_selection.delete()
+
+                # Optional: Recalculate submission totals
+                submission.total_adjustments = submission.customerserviceselection_set.aggregate(
+                    total=models.Sum('question_adjustments')
+                )['total'] or Decimal('0.00')
+
+                submission.total_surcharges = submission.customerserviceselection_set.aggregate(
+                    total=models.Sum('surcharge_amount')
+                )['total'] or Decimal('0.00')
+
+                submission.final_total = (
+                    submission.total_base_price +
+                    submission.total_adjustments +
+                    submission.total_surcharges +
+                    (submission.custom_service_total or Decimal('0.00'))
+                )
+                submission.save()
+
+                return Response({
+                    "message": f"Service {service_id} removed from submission {submission_id}",
+                    "submission_id": str(submission.id),
+                    "remaining_services": submission.customerserviceselection_set.count(),
+                    "final_total": str(submission.final_total)
+                }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )

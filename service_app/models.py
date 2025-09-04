@@ -195,8 +195,8 @@ class QuestionOption(models.Model):
     # For quantity questions
     allow_quantity = models.BooleanField(default=False, 
                                        help_text="Allow quantity input for this option")
-    max_quantity = models.PositiveIntegerField(default=1, 
-                                             help_text="Maximum allowed quantity")
+    max_quantity = models.PositiveIntegerField( 
+                                             help_text="Maximum allowed quantity", null=True , blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
 

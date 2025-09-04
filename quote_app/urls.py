@@ -56,4 +56,10 @@ urlpatterns = [
     path('services/<uuid:service_id>/packages/', views.ServicePackagesView.as_view(), name='service-packages'),
     path('schedule/update/<uuid:submission_id>/', views.QuoteScheduleUpdateView.as_view(), name='quote-schedule-update'),
 
+    path(
+        'submissions/<uuid:submission_id>/remove-service/<uuid:service_id>/',
+        views.RemoveServiceFromSubmissionView.as_view(),
+        name='remove-service-from-submission'
+    ),
+
 ]
