@@ -68,6 +68,11 @@ class PackageSerializer(serializers.ModelSerializer):
     """Serializer for Package model"""
     service_name = serializers.CharField(source='service.name', read_only=True)
     features = serializers.SerializerMethodField()
+    base_price = serializers.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        min_value=0,  # <-- allow zero
+    )
 
     class Meta:
         model = Package
