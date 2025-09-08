@@ -103,4 +103,7 @@ urlpatterns = [
     path('services/<uuid:service_id>/auto-map-packages/', views.AutoMapGlobalToServicePackages.as_view(), name='auto-map-packages'),
     path('services/<uuid:service_id>/mapped-sizes/', views.ServiceMappedSizesAPIView.as_view(), name='mapped-sizes'),
     path('global-sizes/<str:id>/', views.GlobalSizePackageDetailView.as_view(), name='global-size-detail'),
+
+    path("global-base-price/", views.GlobalSettingsView.as_view(), name="global-settings"),
+
 ]

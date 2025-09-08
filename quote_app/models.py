@@ -189,6 +189,7 @@ class CustomerPackageQuote(models.Model):
     
     # Pricing breakdown
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
+    # service_base_price = models.DecimalField(max_digits=10, decimal_places=2,default=Decimal('0.00'), null=True, blank=True)
     sqft_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     question_adjustments = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     surcharge_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))

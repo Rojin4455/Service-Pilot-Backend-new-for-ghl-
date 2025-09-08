@@ -20,7 +20,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import (
     User, Location, Service, Package, Feature, PackageFeature,
     Question, QuestionOption, QuestionPricing, OptionPricing,
-    Order, OrderQuestionAnswer,SubQuestionPricing,SubQuestion,QuestionResponse
+    Order, OrderQuestionAnswer,SubQuestionPricing,SubQuestion,QuestionResponse, GlobalBasePrice
 )
 from .serializers import (
     UserSerializer, LoginSerializer, LocationSerializer, ServiceSerializer,
@@ -29,7 +29,7 @@ from .serializers import (
     QuestionOptionSerializer, QuestionPricingSerializer, OptionPricingSerializer,
     PackageWithFeaturesSerializer, BulkPricingUpdateSerializer,
     ServiceAnalyticsSerializer, SubQuestionPricingSerializer,BulkSubQuestionPricingSerializer,QuestionResponseSerializer,
-    PricingCalculationSerializer, SubQuestionSerializer
+    PricingCalculationSerializer, SubQuestionSerializer,GlobalBasePriceSerializer
 )
 
 
@@ -915,3 +915,26 @@ class GlobalSizePackageDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = GlobalSizePackageSerializer
     queryset = GlobalSizePackage.objects.all().prefetch_related('template_prices')
     lookup_field = 'id'
+
+
+
+
+
+class GlobalSettingsView(APIView):
+    """
+    GET → Retrieve global base price
+    PUT → Update global base price
+    """
+
+    def get(self, request):
+        settings, _ = GlobalBasePrice.objects.get_or_create(id=1)
+        serializer = GlobalBasePriceSerializer(settings)
+        return Response(serializer.data)
+
+    def put(self, request):
+        settings, _ = GlobalBasePrice.objects.get_or_create(id=1)
+        serializer = GlobalBasePriceSerializer(settings, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

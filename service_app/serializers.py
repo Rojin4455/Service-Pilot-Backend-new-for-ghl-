@@ -6,7 +6,7 @@ from .models import (
     User, Location, Service, Package, Feature, PackageFeature,
     Question, QuestionOption, QuestionPricing, OptionPricing,
     Order, OrderQuestionAnswer,ServiceSettings, QuestionResponse, SubQuestion, SubQuestionPricing, SubQuestionResponse,
-    OptionResponse
+    OptionResponse,GlobalBasePrice
 )
 
 
@@ -364,7 +364,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     def get_questions(self, obj):
         """Get only root questions (non-conditional ones)"""
         root_questions = obj.questions.filter(
-            is_active=True, 
+            is_active=True,
             parent_question__isnull=True
         ).order_by('order')
         return QuestionSerializer(root_questions, many=True, context=self.context).data
@@ -653,3 +653,11 @@ class ServicePackageSizeMappingSerializer(serializers.ModelSerializer):
 
     def get_global_size_range(self, obj):
         return f"{obj.global_size.min_sqft} – {obj.global_size.max_sqft} sqft"
+    
+
+
+class GlobalBasePriceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GlobalBasePrice
+        fields = ["id", "base_price", "updated_at"]
+        read_only_fields = ["id", "updated_at"]

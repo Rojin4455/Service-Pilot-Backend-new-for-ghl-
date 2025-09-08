@@ -43,11 +43,27 @@ class Location(models.Model):
         return f"{self.name} - {self.address}"
 
 
+
+
+class GlobalBasePrice(models.Model):
+    base_price = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0.00,
+        help_text="Global base price applied across the system."
+    )
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Base Price: {self.base_price}"
+
 class Service(models.Model):
     """Main service model"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField()
+    # base_price=models.DecimalField(max_digits=10,decimal_places=2,default=Decimal('0.00'))
     is_active = models.BooleanField(default=True)
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

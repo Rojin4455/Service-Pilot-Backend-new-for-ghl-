@@ -14,7 +14,7 @@ from service_app.models import ServiceSettings
 from service_app.models import (
     Service, Package, Feature, PackageFeature, Location,
     Question, QuestionOption, SubQuestion, GlobalSizePackage,
-    ServicePackageSizeMapping, QuestionPricing, OptionPricing, SubQuestionPricing
+    ServicePackageSizeMapping, QuestionPricing, OptionPricing, SubQuestionPricing, GlobalBasePrice
 )
 from .models import (
     CustomerSubmission, CustomerServiceSelection, CustomerQuestionResponse,
@@ -1031,7 +1031,17 @@ class SubmitFinalQuoteView(APIView):
         
         submission.total_base_price = total_base_price
         submission.total_adjustments = total_adjustments
-        # submission.total_surcharges = total_surcharges
+        global_settings = GlobalBasePrice.objects.first()
+        if global_settings:
+            base_price = global_settings.base_price
+        else:
+            base_price = 0  # fallback if not configured
+
+        # apply minimum price rule
+        if final_total < base_price:
+            final_total = base_price
+
+        # save submission
         submission.final_total = final_total
         submission.save()
 
