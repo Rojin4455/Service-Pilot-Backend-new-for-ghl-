@@ -147,7 +147,7 @@ def fetch_all_contacts(location_id: str, access_token: str = None) -> List[Dict[
     print(f"\nTotal contacts retrieved: {len(all_contacts)}")
 
     sync_contacts_to_db(all_contacts)
-    fetch_contacts_locations(all_contacts, location_id, access_token)
+    # fetch_contacts_locations(all_contacts, location_id, access_token)
     # return all_contacts
 
 
@@ -431,6 +431,7 @@ def create_or_update_contact(data):
             "country": data.get("country"),
             "date_added": data.get("dateAdded"),
             "location_id": data.get("locationId"),
+            "custom_fields":data.get("customFields")
         }
     )
     cred = GHLAuthCredentials.objects.first()
