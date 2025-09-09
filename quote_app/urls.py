@@ -62,4 +62,6 @@ urlpatterns = [
         name='remove-service-from-submission'
     ),
 
+    path("global-base-price/", views.GlobalSettingsView.as_view(), name="global-settings"),
+
 ]

@@ -6,6 +6,9 @@ from django.db import transaction
 from accounts.models import GHLAuthCredentials,Contact,Address
 from django.core.exceptions import ObjectDoesNotExist
 import re
+import requests
+from accounts.models import GHLAuthCredentials
+from accounts.models import Contact, Address
 
 
 def fetch_all_contacts(location_id: str, access_token: str = None) -> List[Dict[str, Any]]:
@@ -414,9 +417,7 @@ def sync_addresses_to_db(address_data):
 
 
 
-import requests
-from accounts.models import GHLAuthCredentials
-from accounts.models import Contact, Address
+
 
 def create_or_update_contact(data):
     contact_id = data.get("id")

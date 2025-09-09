@@ -23,14 +23,14 @@ from .models import (
 from .serializers import (
     LocationPublicSerializer, ServicePublicSerializer, PackagePublicSerializer,
     QuestionPublicSerializer, GlobalSizePackagePublicSerializer,
-    CustomerSubmissionCreateSerializer, CustomerSubmissionDetailSerializer,
-    ServiceQuestionResponseSerializer, PricingCalculationRequestSerializer,SubmitFinalQuoteSerializer,
+    CustomerSubmissionCreateSerializer, CustomerSubmissionDetailSerializer,AddressSerializer,
+    ServiceQuestionResponseSerializer, PricingCalculationRequestSerializer,SubmitFinalQuoteSerializer,ContactSerializer,
     ConditionalQuestionRequestSerializer, CustomerPackageQuoteSerializer,ConditionalQuestionResponseSerializer,ServiceResponseSubmissionSerializer,QuoteScheduleUpdateSerializer
 )
+from service_app.serializers import GlobalBasePriceSerializer
 
 from quote_app.helpers import create_or_update_ghl_contact
 from rest_framework.generics import ListAPIView
-from .serializers import ContactSerializer, AddressSerializer
 from accounts.models import Contact, Address
 
 from rest_framework import viewsets
@@ -1204,3 +1204,17 @@ class RemoveServiceFromSubmissionView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+
+
+class GlobalSettingsView(APIView):
+    """
+    GET → Retrieve global base price
+    PUT → Update global base price
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        settings, _ = GlobalBasePrice.objects.get_or_create(id=1)
+        serializer = GlobalBasePriceSerializer(settings)
+        return Response(serializer.data)
