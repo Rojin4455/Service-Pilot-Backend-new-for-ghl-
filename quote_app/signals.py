@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from .models import CustomService,QuoteSchedule, CustomerServiceSelection, CustomerPackageQuote
 import requests
 import json
+from service_app.models import GlobalBasePrice
 
 @receiver([post_save, post_delete], sender=CustomService)
 def update_submission_total(sender, instance, **kwargs):
@@ -39,6 +40,7 @@ def handle_quote_submission(sender, instance, created, **kwargs):
             )
             
             jobs_selected = []
+            total_price = float(0)
             for service_selection in selected_services:
                 selected_package_quote = CustomerPackageQuote.objects.filter(
                     service_selection=service_selection,
@@ -52,6 +54,9 @@ def handle_quote_submission(sender, instance, created, **kwargs):
                         "duration": 180
                     }
                     jobs_selected.append(job)
+                    total_price+=float(selected_package_quote.total_price)
+
+
 
             # Retrieve and add custom services to the jobs_selected list
             custom_services = CustomService.objects.filter(purchase=submission)
@@ -62,7 +67,23 @@ def handle_quote_submission(sender, instance, created, **kwargs):
                     "duration": 180
                 }
                 jobs_selected.append(custom_job)
+                total_price+=float(custom_service.price)
 
+
+            global_price = GlobalBasePrice.objects.first()
+            adjustment_price = float(global_price.base_price) - total_price
+            if adjustment_price < 0:
+                adjustment_price = 0.0
+
+            adjustment = {
+                "title": "Adjustments",
+                "price": adjustment_price,
+                "duration": 180
+            }
+            jobs_selected.append(adjustment)
+
+
+            print("jobs selected: :", jobs_selected)
             # Construct the final payload
             payload = {
                 "customer_name": customer_name,
