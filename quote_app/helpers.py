@@ -58,8 +58,13 @@ def create_or_update_ghl_contact(submission, is_submit=False):
 
         # Step 3: Build custom fields
         booking_url = f"{config('BASE_FRONTEND_URI')}/booking?submission_id={submission.id}"
-        quote_url = f"{config('BASE_FRONTEND_URI')}/quote/details/{submission.id}"
-
+        quote_url = (
+            f"{config('BASE_FRONTEND_URI')}/quote/details/{submission.id}"
+            f"?first_name={submission.contact.first_name}"
+            f"&last_name={submission.contact.last_name}"
+            f"&phone={submission.contact.phone}"
+            f"&email={submission.contact.email}"
+        )
         custom_fields = [{
             "id": "Bff2eZtlr82uvVQmByPh",
             "field_value": quote_url if is_submit else booking_url
