@@ -39,6 +39,11 @@ from .serializers import CustomServiceSerializer
 
 from rest_framework.pagination import PageNumberPagination
 
+import json
+import re
+from django.http import JsonResponse
+from django.utils.dateparse import parse_datetime
+
 class ContactPagination(PageNumberPagination):
     page_size = 20  # items per page
     page_size_query_param = 'page_size'  # allow client to override with ?page_size=50
@@ -1151,6 +1156,59 @@ class QuoteScheduleUpdateView(generics.UpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+
+
+
+
+class ScheduleCalendarAppointmentView(APIView):
+    """
+    Webhook to update QuoteSchedule from calendar booking payload.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+
+            # Extract submission_id from quotelink
+            quotelink = data.get("customData", {}).get("quotelink")
+            if not quotelink:
+                return JsonResponse({"error": "quotelink missing"}, status=400)
+
+            # submission_id is the last UUID in the link
+            match = re.search(r"/quote/details/([a-f0-9\-]+)/?", quotelink)
+            if not match:
+                return JsonResponse({"error": "Invalid quotelink format"}, status=400)
+            submission_id = match.group(1)
+
+            # Extract start time
+            start_time = data.get("calendar", {}).get("startTime")
+            if not start_time:
+                return JsonResponse({"error": "startTime missing"}, status=400)
+
+            scheduled_date = parse_datetime(start_time)
+            if not scheduled_date:
+                return JsonResponse({"error": "Invalid datetime format"}, status=400)
+
+            # Find QuoteSchedule
+            submission = get_object_or_404(CustomerSubmission, id=submission_id)
+            quote_schedule = get_object_or_404(QuoteSchedule, submission=submission)
+
+            # Update scheduled date
+            quote_schedule.scheduled_date = scheduled_date
+            quote_schedule.save(update_fields=["scheduled_date"])
+
+            return JsonResponse({
+                "status": "success",
+                "message": f"QuoteSchedule updated for submission {submission_id}",
+                "scheduled_date": scheduled_date.isoformat()
+            }, status=200)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+        
+
+
 
 from django.db import models
 

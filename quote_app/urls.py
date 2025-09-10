@@ -64,4 +64,5 @@ urlpatterns = [
 
     path("global-base-price/", views.GlobalSettingsView.as_view(), name="global-settings"),
 
+    path("schedule-calendar-appointment/", views.ScheduleCalendarAppointmentView.as_view(), name="schedule-calendar-appointment"),
 ]
