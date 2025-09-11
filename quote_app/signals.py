@@ -64,7 +64,7 @@ def handle_quote_submission(sender, instance, created, **kwargs):
                 custom_job = {
                     "title": custom_service.product_name,
                     "price": float(custom_service.price),
-                    "duration": 180
+                    "duration": 30
                 }
                 jobs_selected.append(custom_job)
                 total_price+=float(custom_service.price)
@@ -75,12 +75,13 @@ def handle_quote_submission(sender, instance, created, **kwargs):
             if adjustment_price < 0:
                 adjustment_price = 0.0
 
-            adjustment = {
-                "title": "Adjustments",
-                "price": adjustment_price,
-                "duration": 180
-            }
-            jobs_selected.append(adjustment)
+            if adjustment_price != 0.0:
+                adjustment = {
+                    "title": "Adjustments",
+                    "price": adjustment_price,
+                    "duration": 30
+                }
+                jobs_selected.append(adjustment)
 
 
             print("jobs selected: :", jobs_selected)
