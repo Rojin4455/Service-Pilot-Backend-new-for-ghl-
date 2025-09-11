@@ -65,7 +65,7 @@ def handle_quote_submission(sender, instance, created, **kwargs):
                     job = {
                         "title": service_selection.service.name,
                         "price": float(selected_package_quote.total_price),
-                        "duration": 180
+                        "duration": 30
                     }
                     jobs_selected.append(job)
                     total_price += float(selected_package_quote.total_price)
@@ -81,30 +81,24 @@ def handle_quote_submission(sender, instance, created, **kwargs):
                 custom_job = {
                     "title": custom_service.product_name,
                     "price": float(custom_service.price),
-                    "duration": 180
+                    "duration": 30
                 }
                 jobs_selected.append(custom_job)
                 total_price += float(custom_service.price)
 
             # Add adjustment job
             global_price = GlobalBasePrice.objects.first()
-            print(f"Global Base Price: {global_price.base_price if global_price else 'None'}")
+            adjustment_price = float(global_price.base_price) - total_price
+            if adjustment_price < 0:
+                adjustment_price = 0.0
 
-            if global_price:
-                adjustment_price = float(global_price.base_price) - total_price
-                print(f"Calculated adjustment: {adjustment_price} (Base: {global_price.base_price}, Total: {total_price})")
-
-                if adjustment_price < 0:
-                    adjustment_price = 0.0
-                    print("Adjustment was negative, clamped to 0.0")
-
+            if adjustment_price != 0.0:
                 adjustment = {
                     "title": "Adjustments",
                     "price": adjustment_price,
-                    "duration": 180
+                    "duration": 30
                 }
                 jobs_selected.append(adjustment)
-                print(f"Adjustment job added: {adjustment}")
 
             print("📝 Final jobs_selected:", jobs_selected)
 
