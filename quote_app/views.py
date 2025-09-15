@@ -1198,7 +1198,8 @@ class ScheduleCalendarAppointmentView(APIView):
 
             # Update scheduled date
             quote_schedule.scheduled_date = scheduled_date
-            quote_schedule.save(update_fields=["scheduled_date"])
+            quote_schedule.is_submitted = True
+            quote_schedule.save(update_fields=["scheduled_date","is_submitted"])
 
             return JsonResponse({
                 "status": "success",
