@@ -1173,6 +1173,7 @@ class ScheduleCalendarAppointmentView(APIView):
             data = request.data
 
             # Extract submission_id from quotelink
+            print("calendar appointment data:", data)
             quotelink = data.get("customData", {}).get("quotelink")
             if not quotelink:
                 return JsonResponse({"error": "quotelink missing"}, status=400)
