@@ -73,7 +73,7 @@ def handle_quote_submission(sender, instance, created, **kwargs):
                     print(" → No selected package quote found for this service.")
 
             # Retrieve and add custom services to the jobs_selected list
-            custom_services = CustomService.objects.filter(purchase=submission)
+            custom_services = CustomService.objects.filter(purchase=submission,is_active=True)
             print(f"Found {custom_services.count()} custom services")
 
             for custom_service in custom_services:

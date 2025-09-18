@@ -101,6 +101,7 @@ class CustomService(models.Model):
     purchase = models.ForeignKey(CustomerSubmission, on_delete=models.CASCADE, related_name='custom_products')
     product_name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
     price = models.IntegerField()
 
 

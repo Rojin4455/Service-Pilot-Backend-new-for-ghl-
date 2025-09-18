@@ -20,7 +20,7 @@ from service_app.serializers import ServiceSettingsSerializer
 class CustomServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomService
-        fields = ['id', 'purchase', 'product_name', 'description', 'price']
+        fields = ['id', 'purchase', 'product_name', 'description', 'price', 'is_active']
 
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
@@ -423,7 +423,7 @@ class CustomServiceSerializer(serializers.ModelSerializer):
     """Serializer for custom services"""
     class Meta:
         model = CustomService
-        fields = ['id', 'product_name', 'description', 'price','purchase']
+        fields = ['id', 'product_name', 'description', 'price','purchase', 'is_active']
 
 
 class QuoteScheduleUpdateSerializer(serializers.ModelSerializer):
