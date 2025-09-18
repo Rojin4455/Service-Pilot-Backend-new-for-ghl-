@@ -131,8 +131,8 @@ class AddServicesToSubmissionView(APIView):
         submission = get_object_or_404(CustomerSubmission, id=submission_id)
         service_ids = request.data.get('service_ids', [])
         
-        if not service_ids:
-            return Response({'error': 'No services selected'}, status=status.HTTP_400_BAD_REQUEST)
+        # if not service_ids:
+        #     return Response({'error': 'No services selected'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             with transaction.atomic():
