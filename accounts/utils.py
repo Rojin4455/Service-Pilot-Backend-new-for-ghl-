@@ -240,6 +240,7 @@ def fetch_contacts_locations(contact_data: list, location_id: str, access_token:
             data = response.json()
             contact_detail = data.get('contact', {})
             # --- Address 0 extraction ---
+
             address_fields = {
                 'street_address': contact_detail.get('address1'),
                 'city': contact_detail.get('city'),
@@ -251,6 +252,13 @@ def fetch_contacts_locations(contact_data: list, location_id: str, access_token:
                 'name': 'Address 0',
                 'contact_id': contact_id
             }
+
+            for field in contact_detail.get("customFields", []):
+                if field.get("id") == "KYALsCnk6LD648bhbvjo":
+                    address_fields["property_sqft"] = field.get("value")
+                    break
+
+            
             # Only save if at least one address field is present
             if any(address_fields.get(f) for f in ['street_address', 'city', 'state', 'postal_code']):
                 sync_addresses_to_db([address_fields])
