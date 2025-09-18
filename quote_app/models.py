@@ -57,8 +57,10 @@ class CustomerSubmission(models.Model):
 
 
     def calculate_final_total(self):
-        """Recalculate final_total including custom services"""
-        custom_services_total = self.custom_products.aggregate(
+        """Recalculate final_total including only active custom services"""
+        custom_services_total = self.custom_products.filter(
+            is_active=True
+        ).aggregate(
             total=models.Sum('price')
         )['total'] or 0
 
