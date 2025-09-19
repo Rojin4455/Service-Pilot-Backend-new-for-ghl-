@@ -907,7 +907,7 @@ class SubmitFinalQuoteView(APIView):
         if submission.status == 'packages_selected':
             # Packages already selected, just need final confirmation
             serializer = SubmitFinalQuoteSerializer(data=request.data)
-        elif submission.status == 'responses_completed':
+        elif submission.status in ['responses_completed','draft']:
             # Need to select packages first, then submit
             serializer = SubmitFinalQuoteSerializer(data=request.data)
             # if not request.data.get('selected_packages'):
@@ -925,7 +925,7 @@ class SubmitFinalQuoteView(APIView):
         try:
             with transaction.atomic():
                 # If packages are provided in payload, update selections
-                if serializer.validated_data.get('selected_packages'):
+                if serializer.validated_data.get('selected_packages',''):
                     self._update_package_selections(submission, serializer.validated_data['selected_packages'])
                 
                 # Update submission with additional information
