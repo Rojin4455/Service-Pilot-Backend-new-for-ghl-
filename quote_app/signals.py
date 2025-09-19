@@ -131,3 +131,4 @@ def handle_quote_submission(sender, instance, created, **kwargs):
             print(f"⚠️ An error occurred in the signal handler: {e}")
     else:
         print("⚠️ Signal ignored: Either created=True or is_submitted=False")
+    

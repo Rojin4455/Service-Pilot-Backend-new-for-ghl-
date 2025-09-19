@@ -903,7 +903,6 @@ class SubmitFinalQuoteView(APIView):
         
         # Check if packages are already selected (from Step 8)
         print("submission status: ", submission.status)
-        print("data: , :",request.data)
         if submission.status == 'packages_selected':
             # Packages already selected, just need final confirmation
             serializer = SubmitFinalQuoteSerializer(data=request.data)

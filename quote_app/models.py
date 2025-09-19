@@ -1,9 +1,10 @@
 # user_models.py - Updated with package selection
 from django.db import models
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 import uuid
 from service_app.models import Service, Package, Location, Question, QuestionOption, SubQuestion
 from accounts.models import Contact, Address
+from django.db.models import Sum
 
 
 
@@ -56,16 +57,61 @@ class CustomerSubmission(models.Model):
 
 
 
+
+    def save(self, *args, **kwargs):
+        """Ensure final_total and custom_service_total are always rounded"""
+        if self.custom_service_total is not None:
+            print(f"[SAVE] Before rounding custom_service_total: {self.custom_service_total}")
+            self.custom_service_total = Decimal(self.custom_service_total).quantize(
+                Decimal("1"), rounding=ROUND_HALF_UP
+            )
+            print(f"[SAVE] After rounding custom_service_total: {self.custom_service_total}")
+
+        if self.final_total is not None:
+            print(f"[SAVE] Before rounding final_total: {self.final_total}")
+            self.final_total = Decimal(self.final_total).quantize(
+                Decimal("1"), rounding=ROUND_HALF_UP
+            )
+            print(f"[SAVE] After rounding final_total: {self.final_total}")
+
+        super().save(*args, **kwargs)
+    #     print("[SAVE] Instance saved successfully\n")
+
+
+ 
     def calculate_final_total(self):
-        """Recalculate final_total including only active custom services"""
-        custom_services_total = self.custom_products.filter(
-            is_active=True
-        ).aggregate(
-            total=models.Sum('price')
+        """Recalculate final_total from base components + only active custom services."""
+        # Sum only active custom services
+        custom_services_total = self.custom_products.filter(is_active=True).aggregate(
+            total=Sum('price')
         )['total'] or 0
 
-        self.custom_service_total = Decimal(custom_services_total)
+        # Ensure Decimal type
+        custom_services_total = Decimal(str(custom_services_total))
+        self.custom_service_total = custom_services_total
+
+    #     # Use stored submission-level components (these should be kept up-to-date elsewhere)
+    #     base_total = (self.total_base_price or Decimal('0.00')) \
+    #                 + (self.total_adjustments or Decimal('0.00')) \
+    #                 + (self.total_surcharges or Decimal('0.00'))
+
+    #     # Compute final total fresh (do not rely on self.final_total being correct)
+    #     final_total = base_total + self.custom_service_total
+
+    #     # Optionally apply global minimum base price if you want:
+    #     # global_settings = GlobalBasePrice.objects.first()
+    #     # if global_settings:
+    #     #     min_price = Decimal(str(global_settings.base_price))
+    #     #     if final_total < min_price:
+    #     #         final_total = min_price
+
+    #     # Round to nearest whole number (no cents)
+    #     final_total = final_total.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+
+    #     # Assign and save
+    #     self.final_total = final_total
         self.save(update_fields=['custom_service_total'])
+
 
 
 
@@ -133,6 +179,13 @@ class CustomerServiceSelection(models.Model):
     class Meta:
         db_table = 'customer_service_selections'
         unique_together = ['submission', 'service']
+
+
+    def save(self, *args, **kwargs):
+        if self.final_total_price is not None:
+            # Round to nearest integer before saving
+            self.final_total_price = self.final_total_price.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+        super().save(*args, **kwargs)
 
 # Keep all other models the same...
 class CustomerQuestionResponse(models.Model):
@@ -210,3 +263,10 @@ class CustomerPackageQuote(models.Model):
     class Meta:
         db_table = 'customer_package_quotes'
         unique_together = ['service_selection', 'package']
+
+
+    def save(self, *args, **kwargs):
+        if self.total_price is not None:
+            # Round to nearest integer
+            self.total_price = self.total_price.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+        super().save(*args, **kwargs)
