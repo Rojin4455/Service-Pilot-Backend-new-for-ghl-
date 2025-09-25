@@ -38,6 +38,9 @@ urlpatterns = [
     
     # Step 6: Submit service responses
     path('<uuid:submission_id>/services/<uuid:service_id>/responses/', views.SubmitServiceResponsesView.as_view(), name='submit-responses'),
+
+    path('<uuid:submission_id>/customservices/responses/', views.SubmitCustomServiceResponsesView.as_view(), name='submit-custom-service-responses'),
+
     
     # Step 7: Get submission details with quotes
     path('<uuid:id>/', views.SubmissionDetailView.as_view(), name='submission-detail'),

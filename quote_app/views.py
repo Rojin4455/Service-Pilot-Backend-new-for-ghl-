@@ -870,6 +870,40 @@ class SubmitServiceResponsesView(APIView):
         return False
 
 
+class SubmitCustomServiceResponsesView(APIView):
+    """Submit responses for a service including conditional questions"""
+    permission_classes = [AllowAny]
+
+    def post(self, request, submission_id):
+        try:
+            with transaction.atomic():
+                submission = get_object_or_404(CustomerSubmission, id=submission_id)
+
+                # Update submission status
+                submission.status = 'responses_completed'
+                submission.save(update_fields=["status"])
+
+                # Sync with GHL contact
+                create_or_update_ghl_contact(submission)
+
+            return Response(
+                {"detail": "Responses submitted successfully."},
+                status=status.HTTP_200_OK
+            )
+
+        except CustomerSubmission.DoesNotExist:
+            return Response(
+                {"detail": "Submission not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        except Exception as e:
+            return Response(
+                {"detail": f"An error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 # Step 7: Get submission details with quotes
 class SubmissionDetailView(generics.RetrieveUpdateAPIView):
     """Get detailed submission with all quotes"""
