@@ -78,8 +78,8 @@ def create_or_update_ghl_contact(submission, is_submit=False):
             contact_payload = {"customFields": custom_fields}
 
             if is_submit:
-                if "quote submitted" not in tags:
-                    tags.append("quote submitted")
+                if "quote accepted" not in tags:
+                    tags.append("quote accepted")
                 contact_payload["tags"] = tags
             else:
                 if "quoted" not in tags:
