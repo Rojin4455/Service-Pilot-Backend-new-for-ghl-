@@ -38,7 +38,7 @@ def handle_quote_submission(sender, instance, created, **kwargs):
             print(f"Contact: {contact.first_name}, {contact.email}, {contact.phone}")
             print(f"Address: {address.get_full_address() if address else 'N/A'}")
 
-            customer_name = contact.first_name
+            customer_name = f"{contact.first_name or ''} {contact.last_name or ''}".strip()
             customer_email = contact.email
             customer_phone = contact.phone
             ghl_contact_id = contact.contact_id
