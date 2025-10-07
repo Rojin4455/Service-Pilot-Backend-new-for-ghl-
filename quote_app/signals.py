@@ -32,6 +32,7 @@ def handle_quote_submission(sender, instance, created, **kwargs):
             submission = instance.submission
             contact = submission.contact
             address = submission.address
+            
 
             print(f"Submission ID: {submission.id}")
             print(f"Contact: {contact.first_name}, {contact.email}, {contact.phone}")
@@ -40,6 +41,7 @@ def handle_quote_submission(sender, instance, created, **kwargs):
             customer_name = contact.first_name
             customer_email = contact.email
             customer_phone = contact.phone
+            ghl_contact_id = contact.contact_id
             customer_address = submission.address.get_full_address() if submission.address else "N/A"
 
             # Retrieve all selected packages for the submission
@@ -108,6 +110,7 @@ def handle_quote_submission(sender, instance, created, **kwargs):
                 "customer_email": customer_email,
                 "customer_address": customer_address,
                 "customer_phone": customer_phone,
+                "ghl_contact_id":ghl_contact_id,
                 "quoted_by": instance.quoted_by,
                 "scheduled_date": instance.scheduled_date.isoformat() if instance.scheduled_date else None,
                 "jobs_selected": jobs_selected,
