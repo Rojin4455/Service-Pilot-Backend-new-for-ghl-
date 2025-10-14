@@ -988,7 +988,8 @@ class SubmitFinalQuoteView(APIView):
                 submission.save()
                 
                 # Calculate final totals if not already done
-                if submission.final_total == Decimal('0.00'):
+                # if submission.final_total == Decimal('0.00'):
+                if True:
                     self._calculate_final_totals(submission)
                     
                 
