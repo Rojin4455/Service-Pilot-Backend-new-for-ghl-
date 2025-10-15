@@ -179,6 +179,8 @@ class CustomerServiceSelection(models.Model):
     class Meta:
         db_table = 'customer_service_selections'
         unique_together = ['submission', 'service']
+        ordering = ['service__order', 'service__name']
+
 
 
     def save(self, *args, **kwargs):

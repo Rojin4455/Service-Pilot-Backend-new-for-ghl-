@@ -74,6 +74,7 @@ class Service(models.Model):
         db_table = 'services'
         ordering = ['order', 'name']
 
+
     def __str__(self):
         return self.name
     
