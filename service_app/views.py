@@ -141,7 +141,7 @@ class ServiceListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Service.objects.filter(is_active=True).prefetch_related(
+        queryset = Service.objects.all().prefetch_related(
             'questions__options',
             'questions__sub_questions',
             'questions__child_questions'
