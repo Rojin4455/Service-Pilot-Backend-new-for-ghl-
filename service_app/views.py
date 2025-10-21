@@ -167,10 +167,11 @@ class ServiceDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ServiceSerializer
     permission_classes = [IsAdminPermission]
 
-    def perform_destroy(self, instance):
-        # Soft delete
-        instance.is_active = False
-        instance.save()
+    # def perform_destroy(self, instance):
+    #     # Soft delete
+    #     instance.delete
+    #     instance.is_active = False
+    #     instance.save()
 
 
 
