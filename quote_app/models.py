@@ -55,9 +55,6 @@ class CustomerSubmission(models.Model):
         db_table = 'customer_submissions'
         ordering = ['-created_at']
 
-
-
-
     def save(self, *args, **kwargs):
         """Ensure final_total and custom_service_total are always rounded"""
         if self.custom_service_total is not None:
@@ -138,6 +135,7 @@ class QuoteSchedule(models.Model):
     # Additional useful fields
     notes = models.TextField(blank=True, null=True, help_text="Any internal notes about the booking.")
     created_at = models.DateTimeField(auto_now_add=True)
+    appointment_id = models.CharField(max_length=255, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):

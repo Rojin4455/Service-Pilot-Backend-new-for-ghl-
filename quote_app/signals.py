@@ -114,6 +114,7 @@ def handle_quote_submission(sender, instance, created, **kwargs):
                 "quoted_by": instance.quoted_by,
                 "scheduled_date": instance.scheduled_date.isoformat() if instance.scheduled_date else None,
                 "jobs_selected": jobs_selected,
+                "appointment_id":instance.appointment_id,
                 "first_time": instance.first_time
             }
 

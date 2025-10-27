@@ -1208,6 +1208,7 @@ class ScheduleCalendarAppointmentView(APIView):
 
             # Extract submission_id from quotelink
             print("calendar appointment data:", data)
+            appointment_id = data.get("calendar", {}).get("appointmentId")
             quotelink = data.get("customData", {}).get("quotelink")
             if not quotelink:
                 return JsonResponse({"error": "quotelink missing"}, status=400)
@@ -1233,6 +1234,7 @@ class ScheduleCalendarAppointmentView(APIView):
 
             # Update scheduled date
             quote_schedule.scheduled_date = scheduled_date
+            quote_schedule.appointment_id=appointment_id
             quote_schedule.is_submitted = True
             quote_schedule.save(update_fields=["scheduled_date","is_submitted"])
 
