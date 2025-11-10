@@ -29,7 +29,8 @@ SECRET_KEY = config('SECRET_KEY')
 
 
 DEBUG = config('DEBUG', 'False').lower() == 'true'
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# ALLOWED_HOSTS = config('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS=["*"]
 
 
 # Application definition
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
     'user_app',
     'quote_app',
     'jobtracker_app',
+    'invoice_app',
 ]
 
 MIDDLEWARE = [
@@ -161,6 +163,12 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
+
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ]
 }
 
 
@@ -176,16 +184,19 @@ SIMPLE_JWT = {
 
 
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React dev server
-    "http://localhost:8080",  # React dev server
-    "http://localhost:8080",  # React dev server
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",  # Alternative React port
-    "http://127.0.0.1:3001",
-    "http://3.141.107.85",
-    "https://quotenew.theservicepilot.com",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",  # React dev server
+#     "http://localhost:8080",  # React dev server
+#     "http://localhost:8080",  # React dev server
+#     "http://127.0.0.1:3000",
+#     "http://localhost:3001",  # Alternative React port
+#     "http://127.0.0.1:3001",
+#     "http://3.141.107.85",
+#     "https://quotenew.theservicepilot.com",
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -223,5 +234,9 @@ CELERY_BEAT_SCHEDULE = {
     'make-api-call-every-minute': {
         'task': 'accounts.tasks.make_api_call',
         'schedule': timedelta(hours=15),
+    },
+    'sync-invoice-daily': {
+        'task': 'invoice_app.tasks.sync_invoices_daily',
+        'schedule': timedelta(hours=10),
     },
 }
