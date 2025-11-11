@@ -1,6 +1,6 @@
 from celery import shared_task
-from invoice_app.services import sync_invoices
+from invoice_app.services import invoice_sync
 
 @shared_task
 def sync_invoices_daily():
-    sync_invoices()
+    invoice_sync()
