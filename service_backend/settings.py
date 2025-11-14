@@ -235,8 +235,8 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'accounts.tasks.make_api_call',
         'schedule': timedelta(hours=15),
     },
-    'sync-invoice-daily': {
-        'task': 'invoice_app.tasks.sync_invoices_daily',
-        'schedule': timedelta(hours=10),
-    },
+    # 'sync-invoice-daily': {
+    #     'task': 'invoice_app.tasks.sync_invoices_daily',
+    #     'schedule': timedelta(hours=10),
+    # },
 }
