@@ -300,28 +300,33 @@ class InvoiceSyncService:
         invoices_data = self.fetch_all_invoices()
         if not invoices_data:
             print("No invoices found from API.")
-            return {"total": 0, "created": 0, "updated": 0}
+            return {"total": 0, "created": 0, "updated": 0, "deleted": 0}
 
         parsed_invoices = []
         all_items = []
+
+        # Parse all invoices + collect items
         for data in invoices_data:
             parsed = self._parse_invoice_data(data)
             parsed_invoices.append(parsed)
+
             items = data.get("invoiceItems", []) or []
             for item in items:
                 if not item.get("_id"):
                     continue
                 all_items.append((parsed["invoice_id"], item))
 
-        invoice_ids = [p["invoice_id"] for p in parsed_invoices]
+        # Invoice IDs coming from GHL
+        ghl_invoice_ids = [p["invoice_id"] for p in parsed_invoices]
 
-        # Fetch existing invoices (get their DB PKs)
-        existing_qs = Invoice.objects.filter(invoice_id__in=invoice_ids)
+        # Get existing invoices
+        existing_qs = Invoice.objects.filter(invoice_id__in=ghl_invoice_ids)
         existing_map = {inv.invoice_id: inv for inv in existing_qs}
 
         new_objs = []
         update_objs = []
 
+        # Create or update
         for parsed in parsed_invoices:
             existing = existing_map.get(parsed["invoice_id"])
             if existing:
@@ -331,16 +336,18 @@ class InvoiceSyncService:
             else:
                 new_objs.append(Invoice(**parsed))
 
+        deleted_count = 0
+
         with transaction.atomic():
-            # Bulk create new invoices
+            # CREATE
             if new_objs:
                 Invoice.objects.bulk_create(new_objs, ignore_conflicts=True)
 
-            # Re-fetch all invoices so we get IDs for new ones
-            all_invoices = Invoice.objects.filter(invoice_id__in=invoice_ids)
+            # RE-FETCH to get PKs
+            all_invoices = Invoice.objects.filter(invoice_id__in=ghl_invoice_ids)
             invoice_pk_map = {inv.invoice_id: inv.pk for inv in all_invoices}
 
-            # Bulk update existing invoices
+            # UPDATE
             if update_objs:
                 fields = [
                     f.name for f in Invoice._meta.fields
@@ -348,15 +355,15 @@ class InvoiceSyncService:
                 ]
                 Invoice.objects.bulk_update(update_objs, fields=fields)
 
-            # Delete existing invoice items for these invoices
-            InvoiceItem.objects.filter(invoice__invoice_id__in=invoice_ids).delete()
+            # DELETE ITEMS FOR ALL SYNCED INVOICES
+            InvoiceItem.objects.filter(invoice__invoice_id__in=ghl_invoice_ids).delete()
 
-            # Build items
+            # ADD ITEMS
             valid_items = []
             for invoice_str_id, item in all_items:
                 invoice_pk = invoice_pk_map.get(invoice_str_id)
                 if not invoice_pk:
-                    continue  # skip if somehow not found
+                    continue
 
                 name = item.get("name") or item.get("title") or ""
                 qty = item.get("qty", 1)
@@ -364,7 +371,7 @@ class InvoiceSyncService:
 
                 valid_items.append(
                     InvoiceItem(
-                        invoice_id=invoice_pk,  # <-- now using numeric FK
+                        invoice_id=invoice_pk,
                         item_id=item.get("_id"),
                         product_id=item.get("productId") or item.get("product_id"),
                         price_id=item.get("priceId") or item.get("price_id"),
@@ -381,11 +388,23 @@ class InvoiceSyncService:
             if valid_items:
                 InvoiceItem.objects.bulk_create(valid_items, ignore_conflicts=True)
 
-        print(f"Sync completed: {len(parsed_invoices)} total, {len(new_objs)} created, {len(update_objs)} updated")
+            # -----------------------------------------
+            # DELETE INVOICES NOT IN GHL ANYMORE
+            # -----------------------------------------
+            to_delete_qs = Invoice.objects.exclude(invoice_id__in=ghl_invoice_ids)
+            deleted_count = to_delete_qs.count()
+            to_delete_qs.delete()
+
+        print(
+            f"Sync completed: {len(parsed_invoices)} total, "
+            f"{len(new_objs)} created, {len(update_objs)} updated, {deleted_count} deleted"
+        )
+
         return {
             "total": len(parsed_invoices),
             "created": len(new_objs),
             "updated": len(update_objs),
+            "deleted": deleted_count,
         }
 
 

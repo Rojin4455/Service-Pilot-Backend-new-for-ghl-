@@ -217,14 +217,47 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         # === Status Distribution ===
         status_distribution = {}
+        now = timezone.now()
+        
+        # Calculate Due and Overdue dynamically based on due_date
+        # Due: invoices with due_date >= today and amount_due > 0, status not paid/void
+        due_queryset = queryset.filter(
+            due_date__gte=now,
+            amount_due__gt=0,
+            status='sent',
+        )
+        due_count = due_queryset.count()
+        due_total = due_queryset.aggregate(Sum("total"))["total__sum"] or 0
+        status_distribution["due"] = {
+            "label": "Due",
+            "count": due_count,
+            "total": due_total,
+        }
+        
+        # Overdue: invoices with due_date < today and amount_due > 0, status not paid/void
+        overdue_queryset = queryset.filter(
+            due_date__lt=now,
+            amount_due__gt=0,
+            status='sent'
+        )
+        overdue_count = overdue_queryset.count()
+        overdue_total = overdue_queryset.aggregate(Sum("total"))["total__sum"] or 0
+        status_distribution["overdue"] = {
+            "label": "Overdue",
+            "count": overdue_count,
+            "total": overdue_total,
+        }
+        
+        # Keep other statuses from STATUS_CHOICES (excluding 'overdue' since we calculate it dynamically)
         for value, label in Invoice.STATUS_CHOICES:
-            count = queryset.filter(status=value).count()
-            amount = queryset.filter(status=value).aggregate(Sum("total"))["total__sum"] or 0
-            status_distribution[value] = {
-                "label": label,
-                "count": count,
-                "total": amount,
-            }
+            if value != 'overdue':  # Skip 'overdue' as we calculate it dynamically
+                count = queryset.filter(status=value).count()
+                amount = queryset.filter(status=value).aggregate(Sum("total"))["total__sum"] or 0
+                status_distribution[value] = {
+                    "label": label,
+                    "count": count,
+                    "total": amount,
+                }
 
         # === Grouping by Time (Trends) ===
         if granularity == "weekly":
