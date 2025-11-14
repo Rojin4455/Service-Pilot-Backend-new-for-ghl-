@@ -19,7 +19,9 @@ class InvoiceFilter(filters.FilterSet):
     """Filter class for Invoice model"""
     
     search = filters.CharFilter(method='filter_search')
-    status = filters.MultipleChoiceFilter(field_name='status', choices=Invoice.STATUS_CHOICES)
+    # Extended choices to include calculated statuses (due, overdue)
+    status_choices = list(Invoice.STATUS_CHOICES) + [('due', 'Due'), ('overdue', 'Overdue')]
+    status = filters.MultipleChoiceFilter(method='filter_status', choices=status_choices)
     
     issue_date_from = filters.DateTimeFilter(field_name='issue_date', lookup_expr='gte')
     issue_date_to = filters.DateTimeFilter(field_name='issue_date', lookup_expr='lte')
@@ -56,6 +58,52 @@ class InvoiceFilter(filters.FilterSet):
             Q(contact_email__icontains=value) |
             Q(contact_phone__icontains=value)
         )
+    
+    def filter_status(self, queryset, name, value):
+        """
+        Custom status filter that handles both database statuses and calculated statuses (due, overdue).
+        """
+        from django.utils import timezone
+        now = timezone.now()
+        
+        if not value:
+            return queryset
+        
+        # Handle multiple status values
+        status_filters = Q()
+        has_due = False
+        has_overdue = False
+        regular_statuses = []
+        
+        for status_val in value:
+            if status_val == 'due':
+                has_due = True
+            elif status_val == 'overdue':
+                has_overdue = True
+            else:
+                regular_statuses.append(status_val)
+        
+        # Build the combined filter
+        if regular_statuses:
+            status_filters |= Q(status__in=regular_statuses)
+        
+        if has_due:
+            # Due: invoices with due_date >= today, amount_due > 0, status='sent'
+            status_filters |= Q(
+                due_date__gte=now,
+                amount_due__gt=0,
+                status='sent'
+            )
+        
+        if has_overdue:
+            # Overdue: invoices with due_date < today, amount_due > 0, status='sent'
+            status_filters |= Q(
+                due_date__lt=now,
+                amount_due__gt=0,
+                status='sent'
+            )
+        
+        return queryset.filter(status_filters)
     
     def filter_overdue(self, queryset, name, value):
         from django.utils import timezone
